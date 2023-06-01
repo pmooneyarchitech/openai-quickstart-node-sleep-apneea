@@ -3,18 +3,28 @@ import { useState } from "react";
 import styles from "./index.module.css";
 
 export default function Home() {
-  const [animalInput, setAnimalInput] = useState("");
+  const [bmiInput,
+    setBMIInput
+  ] = useState("");
+  const [sysBPInput,
+    setSysBPInput] = useState("")
+  const [diaBPInput,
+    setDiaBPInput] = useState("")
+  const [bloodSugarInput,
+    setBloodSugarInput] = useState("");
   const [result, setResult] = useState();
 
   async function onSubmit(event) {
     event.preventDefault();
+    const body = { bmi: bmiInput, systolic: sysBPInput, diastolic: diaBPInput, bloodSugar: bloodSugarInput };
+    console.log("body", body);
     try {
       const response = await fetch("/api/generate", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ animal: animalInput }),
+        body: JSON.stringify(body),
       });
 
       const data = await response.json();
@@ -23,7 +33,6 @@ export default function Home() {
       }
 
       setResult(data.result);
-      setAnimalInput("");
     } catch(error) {
       // Consider implementing your own error handling logic here
       console.error(error);
@@ -39,19 +48,42 @@ export default function Home() {
       </Head>
 
       <main className={styles.main}>
-        <img src="/dog.png" className={styles.icon} />
-        <h3>Name my pet</h3>
+        <h3>Enter BMI, Systolic, Diastolic, and Blood Sugar level</h3>
         <form onSubmit={onSubmit}>
+
           <input
-            type="text"
-            name="animal"
-            placeholder="Enter an animal"
-            value={animalInput}
-            onChange={(e) => setAnimalInput(e.target.value)}
+              type="text"
+              name="bmi"
+              placeholder="BMI"
+              value={bmiInput}
+              onChange={(e) => setBMIInput(e.target.value)}
           />
-          <input type="submit" value="Generate names" />
+          <input
+              type="text"
+              name="systolic"
+              placeholder="Systolic HR"
+              value={sysBPInput}
+              onChange={(e) => setSysBPInput(e.target.value)}
+          />
+          <input
+              type="text"
+              name="diastolic"
+              placeholder="Diastolic HR"
+              value={diaBPInput}
+              onChange={(e) => setDiaBPInput(e.target.value)}
+          />
+          <input
+              type="text"
+              name="bloodSugar"
+              placeholder="Blood Sugar"
+              value={bloodSugarInput}
+              onChange={(e) => setBloodSugarInput(e.target.value)}
+          />
+          <input type="submit" value="Get Recommendations" />
         </form>
-        <div className={styles.result}>{result}</div>
+        {result?.split('\n').map(item => {
+          return (<div className={styles.result}>{item}</div>);
+        })}
       </main>
     </div>
   );
