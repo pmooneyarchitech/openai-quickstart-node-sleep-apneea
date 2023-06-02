@@ -25,7 +25,7 @@ export default async function (req, res) {
       model: "text-davinci-003",
       prompt,
       temperature: 0.6,
-      max_tokens: 2048
+      max_tokens: 1024
     });
     console.log("completion", completion.data);
     res.status(200).json({ result: completion.data.choices[0].text });
@@ -51,11 +51,15 @@ function parseAndGenerateTreatmentRecommendation(input) {
 }
 
 function generateTreatmentRecommendation(bmi, systolicBloodPressure, diastolicBloodPressure, bloodSugar) {
-  return `Suggest some recommendations for treating sleep apnea based on the following information:
-  
-  BMI: ${bmi}
-  Systolic Blood Pressure: ${systolicBloodPressure} mm Hg
-  Diastolic Blood Pressure: ${diastolicBloodPressure} mm Hg
-  Blood Sugar: ${bloodSugar} mg/dL
+  return `User: I have collected some data points related to sleep apnea. Can you provide recommendations based on this information?
+
+Context:
+- BMI: ${bmi}
+- Systolic blood pressure: ${systolicBloodPressure} mm Hg
+- Diastolic blood pressure: ${diastolicBloodPressure} mm Hg
+- Blood sugar level: ${bloodSugar} mg/dL
+
+GPT-3.5: What lifestyle modifications or treatments would you recommend for managing sleep apnea based on the provided data points?
   `
 }
+
