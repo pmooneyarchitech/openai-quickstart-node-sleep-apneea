@@ -15,22 +15,19 @@ export default async function (req, res) {
     return;
   }
 
-  const animal = req.body.animal || '';
-  if (animal.trim().length === 0) {
-    res.status(400).json({
-      error: {
-        message: "Please enter a valid animal",
-      }
-    });
-    return;
-  }
+  console.log("Request body", req.body);
+  const { bmi, systolic, diastolic, bloodSugar } = req.body;
 
   try {
+    const prompt = generateTreatmentRecommendation(bmi, systolic, diastolic, bloodSugar)
+    console.log("prompt:", prompt);
     const completion = await openai.createCompletion({
       model: "text-davinci-003",
-      prompt: generatePrompt(animal),
+      prompt,
       temperature: 0.6,
+      max_tokens: 1024
     });
+    console.log("completion", completion.data);
     res.status(200).json({ result: completion.data.choices[0].text });
   } catch(error) {
     // Consider adjusting the error handling logic for your use case
@@ -48,15 +45,21 @@ export default async function (req, res) {
   }
 }
 
-function generatePrompt(animal) {
-  const capitalizedAnimal =
-    animal[0].toUpperCase() + animal.slice(1).toLowerCase();
-  return `Suggest three names for an animal that is a superhero.
-
-Animal: Cat
-Names: Captain Sharpclaw, Agent Fluffball, The Incredible Feline
-Animal: Dog
-Names: Ruff the Protector, Wonder Canine, Sir Barks-a-Lot
-Animal: ${capitalizedAnimal}
-Names:`;
+function parseAndGenerateTreatmentRecommendation(input) {
+  const [bmi, systolicBloodPressure, diastolicBloodPressure, bloodSugar] = input.split(',').map(item => item.trim())
+  return generateTreatmentRecommendation(bmi, systolicBloodPressure, diastolicBloodPressure, bloodSugar);
 }
+
+function generateTreatmentRecommendation(bmi, systolicBloodPressure, diastolicBloodPressure, bloodSugar) {
+  return `User: I have collected some data points related to sleep apnea. Can you provide recommendations based on this information?
+
+Context:
+- BMI: ${bmi}
+- Systolic blood pressure: ${systolicBloodPressure} mm Hg
+- Diastolic blood pressure: ${diastolicBloodPressure} mm Hg
+- Blood sugar level: ${bloodSugar} mg/dL
+
+GPT-3.5: What lifestyle modifications or treatments would you recommend for managing sleep apnea based on the provided data points?
+  `
+}
+
